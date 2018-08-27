@@ -5,6 +5,7 @@ import requests
 import json
 import base64
 import time
+import random
 
 url = "http://localhost:8383"
 rpcuser = "ckrpc"
@@ -38,12 +39,12 @@ def make_contract():
     # retrieve an output to spend
     toSpend = request("listunspentoutputs", {"password": walletpassword, "account": walletaccount})["result"]["outputs"][0]
 
-    # input wrapper spending output
+    # input wrapper spending output  
     input = {"outputId": toSpend["id"]}
 
     # new output for spent funds (minus fee)
     newOutput = {"value": toSpend["value"] - fee,
-                "nonce": 0,
+                "nonce": random.randint(1, 64000),
                 "data": {"contract": compiledCode}}
 
     outputId = request("calculateoutputid", {"output": newOutput})["result"]

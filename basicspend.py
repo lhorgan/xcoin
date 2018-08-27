@@ -3,6 +3,7 @@ import json
 import base64
 import time
 import sys
+import random
 
 url = "http://localhost:8383"
 rpcuser = "ckrpc"
@@ -40,7 +41,7 @@ def spend(outputId):
     # less than the input value
     newOutput = {
         "value": 50,
-        "nonce": 0,
+        "nonce": random.randint(1, 64000),
         "data": {"publicKey": publicKey},
     }
 
