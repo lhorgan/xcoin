@@ -46,17 +46,20 @@ def make_contract():
                 "nonce": 0,
                 "data": {"contract": compiledCode}}
 
+    outputId = request("calculateoutputid", {"output": newOutput})["result"]
+    print(outputId)
+
     # the unsigned transaction
     transaction = {
         "inputs": [input], 
         "outputs": [newOutput], 
         "timestamp": int(time.time()),
     }
-    print(json.dumps(transaction, sort_keys=True, indent=4))
+    #print(json.dumps(transaction, sort_keys=True, indent=4))
 
     # have ckd sign the unsigned transaction for us
     signed = request("signtransaction", {"transaction": transaction, "password": walletpassword})["result"]
-    print(json.dumps(signed, sort_keys=True, indent=4))
+    #print(json.dumps(signed, sort_keys=True, indent=4))
 
     # broadcast the signed transaction on the network
     success = request("sendrawtransaction", {"transaction": signed})["result"]
