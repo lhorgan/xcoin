@@ -4,10 +4,47 @@ local firstNonce = 61
 
 print("Contract running!!!")
 
+function getInputOutputsToOutput(output)
+    print("HELLO WORLD GET INPUT OUTPUTS TO OUTPUT")
+    local outputTransaction = Blockchain.getTransaction(output["creationTx"])
+    print("FANTASTIC")
+    local transactionInputs = outputTransaction["inputs"]
+    print("ALL GOOD")
+    local outputs = {}
+    print("ALIVE")
+    print(inspect(transactionInputs))
+    for _, inpId in ipairs(transactionInputs) do
+        local inp = Blockchain.getInput(inpId)
+        local out = Blockchain.getOutput(inp["outputId"])
+        table.insert(outputs, out)
+    end
+
+    print("here goes...")
+    print(inspect(outputs))
+    return outputs
+end
+
+function inspect(o)
+    if type(o) == 'table' then
+       local s = '{ '
+       for k,v in pairs(o) do
+          if type(k) ~= 'number' then k = '"'..k..'"' end
+          s = s .. '['..k..'] = ' .. inspect(v) .. ','
+       end
+       return s .. '} '
+    else
+       return tostring(o)
+    end
+ end
+ 
+
 function isFirstInChain(output)
     print("in is first in chain")
     local firstInChain = false
     local error = false
+
+    print("here is the output that got passed in...")
+    print(output)
 
     --[ Is this the first output in the transaction? ]
     if output["data"]["contract"] == nil then
@@ -16,7 +53,13 @@ function isFirstInChain(output)
     else --[ So, the contract isn't null, then]
         print("def")
         local outputTransaction = Blockchain.getTransaction(output["creationTx"])
-        for _, out in ipairs(outputTransaction["outputs"]) do
+        print("Here is the output transaction")
+        print(outputTransaction)
+        for _, outId in ipairs(outputTransaction["outputs"]) do
+            print("HERE IS OUT ID")
+            print(outId)
+            out = Blockchain.getOutput(outId)
+            print(out)
             if out["data"]["contract"] ~= output["data"]["contract"] then
                 firstInChain = true
                 break
@@ -75,5 +118,5 @@ function verifyLegal()
     return true
 end
 
-print("erm")
-return verifyLegal()
+getInputOutputsToOutput(Blockchain.getOutput(thisInput["outputId"]))
+return false
