@@ -12,7 +12,7 @@ rpcuser = "ckrpc"
 rpcpassword = "jxjQ9TgRqIyIlatz7a1TNjEJ2TNQ46M8K9WFEM9VXFQ="
 walletpassword = "distance"
 walletaccount = "nifty"
-fee = 20000
+fee = 700000
 publicKey = "BLD6fw7+X/a2BBwYBEUOpwjNaSmpnnv9Jpj59iv4f7TIAQLOFR40Zg4Kh0fnoXRXqhYQGePJDSnWgaMl8uV8uCQ="
 
 def request(method, params):
@@ -31,7 +31,10 @@ def request(method, params):
     return response
 
 def make_contract():
-    contractCode = "print(\"running Lua contract!\")\r\nreturn true"
+    with open("contract.lua") as contractFile:
+        contractCode = contractFile.read()
+
+    #contractCode = "print(\"running Lua contract!\")\r\nreturn true"
 
     # compile the contract source code
     compiledCode = request("compilecontract", {"code": contractCode})["result"]
@@ -39,12 +42,12 @@ def make_contract():
     # retrieve an output to spend
     toSpend = request("listunspentoutputs", {"password": walletpassword, "account": walletaccount})["result"]["outputs"][0]
 
-    # input wrapper spending output  
+    # input wrapper spending output
     input = {"outputId": toSpend["id"]}
 
     # new output for spent funds (minus fee)
     newOutput = {"value": toSpend["value"] - fee,
-                "nonce": random.randint(1, 64000),
+                "nonce": 61,
                 "data": {"contract": compiledCode}}
 
     outputId = request("calculateoutputid", {"output": newOutput})["result"]
