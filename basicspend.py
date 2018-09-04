@@ -10,7 +10,7 @@ rpcuser = "ckrpc"
 rpcpassword = "jxjQ9TgRqIyIlatz7a1TNjEJ2TNQ46M8K9WFEM9VXFQ="
 walletpassword = "distance"
 walletaccount = "nifty"
-fee = 20000
+fee = 700000
 publicKey = "BLD6fw7+X/a2BBwYBEUOpwjNaSmpnnv9Jpj59iv4f7TIAQLOFR40Zg4Kh0fnoXRXqhYQGePJDSnWgaMl8uV8uCQ="
 
 def request(method, params):
@@ -39,10 +39,17 @@ def spend(outputId):
     # any arbitrary output to send the funds to. 
     # Replace the value with the desired amount that's
     # less than the input value
+
+    with open("contract.lua") as contractFile:
+        contractCode = contractFile.read()
+
+    # compile the contract source code
+    compiledCode = request("compilecontract", {"code": contractCode})["result"]
+
     newOutput = {
-        "value": 50,
+        "value": 10000000 - fee,
         "nonce": random.randint(1, 64000),
-        "data": {"publicKey": publicKey},
+        "data": {"publicKey": publicKey, "value": 1000, "contract": compiledCode},
     }
 
     transaction = {
@@ -52,8 +59,10 @@ def spend(outputId):
     }
     print(json.dumps(transaction, sort_keys=True, indent=4))
 
+    signed = request("signtransaction", {"transaction": transaction, "password": walletpassword})["result"]
+
     # broadcast the transaction on the network
-    success = request("sendrawtransaction", {"transaction": transaction})["result"]
+    success = request("sendrawtransaction", {"transaction": signed})["result"]
     print(success)
 
 spend(sys.argv[1])

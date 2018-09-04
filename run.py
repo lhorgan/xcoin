@@ -40,15 +40,21 @@ def make_contract():
     compiledCode = request("compilecontract", {"code": contractCode})["result"]
 
     # retrieve an output to spend
-    toSpend = request("listunspentoutputs", {"password": walletpassword, "account": walletaccount})["result"]["outputs"][0]
+    toSpends = request("listunspentoutputs", {"password": walletpassword, "account": walletaccount})["result"]["outputs"]
+    toSpend = None
+    for spend in toSpends:
+        print(spend)
+        if spend["data"]["contract"] is None:
+            toSpend = spend
+            break
 
     # input wrapper spending output
     input = {"outputId": toSpend["id"]}
 
     # new output for spent funds (minus fee)
-    newOutput = {"value": toSpend["value"] - fee,
-                "nonce": 61,
-                "data": {"contract": compiledCode}}
+    newOutput = {"value": 10000000,
+                "nonce": 82319964,
+                "data": {"contract": compiledCode, "value": 1000, "publicKey": "BLD6fw7+X/a2BBwYBEUOpwjNaSmpnnv9Jpj59iv4f7TIAQLOFR40Zg4Kh0fnoXRXqhYQGePJDSnWgaMl8uV8uCQ="}}
 
     outputId = request("calculateoutputid", {"output": newOutput})["result"]
     print(outputId)
@@ -56,9 +62,10 @@ def make_contract():
     # the unsigned transaction
     transaction = {
         "inputs": [input], 
-        "outputs": [newOutput], 
+        "outputs": [newOutput, newOutput], 
         "timestamp": int(time.time()),
     }
+    
     #print(json.dumps(transaction, sort_keys=True, indent=4))
 
     # have ckd sign the unsigned transaction for us
@@ -68,6 +75,9 @@ def make_contract():
     # broadcast the signed transaction on the network
     success = request("sendrawtransaction", {"transaction": signed})["result"]
     print(success)
+
+    signed["outputs"][0]["data"]["contract"] = "*"
+    print(signed["outputs"][0])
 
     return signed
 
